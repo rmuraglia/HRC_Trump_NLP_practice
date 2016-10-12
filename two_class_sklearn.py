@@ -1,30 +1,32 @@
-# make_corpus.py
+# two_class_sklearn.py
+
+"""
+implement a basic text classifier to assign if the speaker of a given sentence was Donald Trump or Hillary Clinton
+
+based on: 
+http://scikit-learn.org/stable/auto_examples/text/document_classification_20newsgroups.html#example-text-document-classification-20newsgroups-py
+http://stackoverflow.com/questions/11116697/how-to-get-most-informative-features-for-scikit-learn-classifiers
+http://scikit-learn.org/stable/modules/feature_extraction.html#text-feature-extraction
+http://scikit-learn.org/stable/auto_examples/model_selection/grid_search_text_feature_extraction.html#sphx-glr-auto-examples-model-selection-grid-search-text-feature-extraction-py
+"""
 
 import pickle
 import itertools
-from sklearn.feature_extraction.text import TfidfVectorizer
-import numpy as np
 import pandas as pd
+import numpy as np
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
-import matplotlib.pyplot as plt 
 
 # load processed lines
 with open('clinton.pickle', 'rb') as f : clinton = pickle.load(f)
 with open('trump.pickle', 'rb') as f : trump = pickle.load(f)
-# with open('moderator.pickle', 'rb') as f : moderator = pickle.load(f)
-# with open('dems.pickle', 'rb') as f : dems = pickle.load(f)
-# with open('reps.pickle', 'rb') as f : reps = pickle.load(f)
 
 # set up data frame to store lines and labels
-# note labels are: 0 to 4 in order listed below (order added to all_lines)
+# note labels are: 0 (clinton), 1 (trump) 
 all_clinton = list(itertools.chain.from_iterable(clinton))
 all_trump = list(itertools.chain.from_iterable(trump))
-# all_moderator = list(itertools.chain.from_iterable(moderator))
-# all_dems = list(itertools.chain.from_iterable(dems))
-# all_reps = list(itertools.chain.from_iterable(reps))
-all_lines = all_clinton + all_trump #+ all_moderator + all_dems + all_reps
-# labels = np.repeat(np.arange(5), [len(all_clinton), len(all_trump), len(all_moderator), len(all_dems), len(all_reps)])
-labels = np.repeat(np.arange(2), [len(all_clinton), len(all_trump)])#, len(all_moderator), len(all_dems), len(all_reps)])
+all_lines = all_clinton + all_trump 
+labels = np.repeat(np.arange(2), [len(all_clinton), len(all_trump)])
 lines_df = pd.DataFrame({'lines': all_lines, 'labels': labels})
 
 # split data to train, cross validation, test sets
@@ -45,20 +47,19 @@ y_train = [int(x) for x in train_dat['labels']]
 # X_train.toarray() # see features matrix count (sparse matrix)
 
 # ways to see list of words used as features
-# tom = vectorizer.get_feature_names()
-# tam = vectorizer.vocabulary_
+# vectorizer.get_feature_names()
+# vectorizer.vocabulary_
 
+# create feature and label matrices/vectors for cross validation and test sets
 X_xval = vectorizer.transform(xval_dat['lines'])
 X_test = vectorizer.transform(test_dat['lines'])
 y_xval = [int(x) for x in xval_dat['labels']]
 y_test = [int(x) for x in test_dat['labels']]
 
-x2 = X_test
-
 # fit naive bayes classifier
 clf = MultinomialNB()
 clf.fit(X_train, y_train)
 
-clf.score(X_train, y_train)
-clf.score(X_xval, y_xval)
-clf.score(X_test, y_test)
+clf.score(X_train, y_train) # seet training accuracy
+clf.score(X_xval, y_xval) # see cross validation accuracy (tweak model based on this)
+clf.score(X_test, y_test) # once model is FIXED, test on this
