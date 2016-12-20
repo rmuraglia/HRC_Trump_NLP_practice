@@ -60,6 +60,6 @@ y_test = [int(x) for x in test_dat['labels']]
 clf = MultinomialNB()
 clf.fit(X_train, y_train)
 
-clf.score(X_train, y_train) # seet training accuracy
+clf.score(X_train, y_train) # see training accuracy
 clf.score(X_xval, y_xval) # see cross validation accuracy (tweak model based on this)
 clf.score(X_test, y_test) # once model is FIXED, test on this
